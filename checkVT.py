@@ -21,7 +21,6 @@ ssl._create_default_https_context = ssl._create_unverified_context
 reload(sys)
 sys.setdefaultencoding( "utf-8" )
 
-from email.mime.text import MIMEText
 from bs4 import BeautifulSoup
 
 def sha256(filename):

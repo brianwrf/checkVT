@@ -115,22 +115,6 @@ def main():
         result = virustotal(file_hash,file_path)
         f.write(result)
     f.close()
-   
-
-def test(): 
-    f = open('result_VT.txt','w') # Open log file
-    # set up file path to scan on VirusTotal
-    path = r'C:\Users\123\Desktop\alertMon'
-    file_hash = get_file_hash(path)
-    #print file_hash
-    for eachhash in file_hash:
-        file_hash = eachhash.split(',')[0]
-        file_path = eachhash.split(',')[1]
-        result = virustotal(file_hash,file_path)
-        f.write(result)
-    f.close()
-    
     
 if __name__ == "__main__":
     main()
-    #test()

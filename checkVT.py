@@ -3,7 +3,7 @@
 
 # Description: check Hashes in VirusTotal.com
 # Author: avfisher
-# Date: 2015.05.08
+# Date: 2015.05.11
 
 import urllib2
 import re

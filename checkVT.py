@@ -2,7 +2,7 @@
 # -*- coding:utf8 -*-
 
 # Description: check Hashes in VirusTotal.com
-# Author: renfei
+# Author: avfisher
 # Date: 2015.05.08
 
 import urllib2
@@ -88,11 +88,19 @@ def getResultFromVirusTotal(html,url, file_hash,file_path):
     try:
         soup = BeautifulSoup(html)
         html_doc=soup.find_all('tr')
-        ratio=html_doc[2].find_all('td')[1].find_all(text=True)[0].strip()
-        result=file_hash+","+file_path+","+ratio+","+url+"\n"
-        print file_hash+","+ratio
+        if 'Detection ratio' in html_doc[2].find_all('td')[0].find_all(text=True)[0]:
+            ratio=html_doc[2].find_all('td')[1].find_all(text=True)[0].strip()
+            result=file_hash+","+ratio+","+url+","+file_path+"\n"
+            print file_hash+","+ratio
+        elif 'Detection ratio' in html_doc[1].find_all('td')[0].find_all(text=True)[0]:
+            ratio=html_doc[1].find_all('td')[1].find_all(text=True)[0].strip()
+            result=file_hash+","+ratio+","+url+","+file_path+"\n"
+            print file_hash+","+ratio
+        else:
+            result=file_hash+",File not found,"+url+","+file_path+"\n"
+            print file_hash+",File not found"   
     except Exception:
-        result=file_hash+","+file_path+",File not found,"+url+"\n"
+        result=file_hash+",File not found,"+url+","+file_path+"\n"
         print file_hash+",File not found"
     return result
 
@@ -107,7 +115,7 @@ def virustotal(file_hash, file_path):
 def main():
     f = open('result_VT.txt','w') # Open log file
     # set up file path to scan on VirusTotal
-    path = r'C:\Users\renfei\Desktop\EasyShip5.3.14_20140807_installation'
+    path = r'C:\Users\123\Desktop\EasyShip5.3.14_20140807_installation'
     file_hash = get_file_hash(path)
     print "-----------File hash calculation is done-----------"
     for eachhash in file_hash:
@@ -121,7 +129,7 @@ def main():
 def test(): 
     f = open('result_VT.txt','w') # Open log file
     # set up file path to scan on VirusTotal
-    path = r'C:\Users\renfei\Desktop\alertMon'
+    path = r'C:\Users\123\Desktop\alertMon'
     file_hash = get_file_hash(path)
     #print file_hash
     print "-----------File hash calculation is done-----------"

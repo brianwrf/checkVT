@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 # -*- coding:utf8 -*-
 
-# Description: check Hashes in VirusTotal.com
-# Author: avfisher
-# Date: 2015.05.08
+# Description: calculate and check Hashes of multi-files on VirusTotal.com
+# Author: Avfisher
+# Email: security_alert@126.com
+# Date: 2015.06.30
 
 import urllib2
 import re
@@ -14,6 +15,8 @@ import os
 import time
 import ssl
 import hashlib
+import argparse
+import getopt 
 
 # Ignore SSL error when accessing a HTTPS website
 ssl._create_default_https_context = ssl._create_unverified_context
@@ -29,16 +32,16 @@ def sha256(filename):
     sh = hashlib.sha256()
     sh.update(f.read())
     fhash = sh.hexdigest()+","+filename
-    now = time.strftime('%H:%M:%S',time.localtime(time.time()))
-    print str(now)+": "+sh.hexdigest()
+    #now = time.strftime('%H:%M:%S',time.localtime(time.time()))
+    now = time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time()))
+    print "["+str(now)+"]: "+sh.hexdigest()
     f.close()
     return fhash
 
 def get_all_file(path):
     file_list = []
-    #print path
     if path is None:
-        raise Exception("floder_path is None")
+        raise Exception("folder_path is None")
     for dirpath, dirnames, filenames in os.walk(path):
         for name in filenames:
             file_list.append(dirpath + '\\' + name)
@@ -86,22 +89,23 @@ def getUrlRespHtml(url):
 def getResultFromVirusTotal(html,url, file_hash,file_path):  
     result=""
     try:
+        now = time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time()))
         soup = BeautifulSoup(html)
         html_doc=soup.find_all('tr')
         if 'Detection ratio' in html_doc[2].find_all('td')[0].find_all(text=True)[0]:
             ratio=html_doc[2].find_all('td')[1].find_all(text=True)[0].strip()
-            result=file_hash+","+ratio+","+url+","+file_path+"\n"
-            print file_hash+","+ratio
+            result=file_hash+","+ratio+","+url+","+file_path
+            print "["+now+"]: "+file_hash+","+ratio
         elif 'Detection ratio' in html_doc[1].find_all('td')[0].find_all(text=True)[0]:
             ratio=html_doc[1].find_all('td')[1].find_all(text=True)[0].strip()
-            result=file_hash+","+ratio+","+url+","+file_path+"\n"
-            print file_hash+","+ratio
+            result=file_hash+","+ratio+","+url+","+file_path
+            print "["+now+"]: "+file_hash+","+ratio
         else:
-            result=file_hash+",File not found,"+url+","+file_path+"\n"
-            print file_hash+",File not found"   
+            result=file_hash+",File not found,"+url+","+file_path
+            print "["+now+"]: "+file_hash+",File not found"   
     except Exception:
-        result=file_hash+",File not found,"+url+","+file_path+"\n"
-        print file_hash+",File not found"
+        result=file_hash+",File not found,"+url+","+file_path
+        print "["+now+"]: "+file_hash+",File not found"
     return result
 
 def virustotal(file_hash, file_path):
@@ -112,36 +116,98 @@ def virustotal(file_hash, file_path):
     res=getResultFromVirusTotal(html, url, file_hash, file_path)
     return res
 
-def main():
-    f = open('result_VT.txt','w') # Open log file
-    # set up file path to scan on VirusTotal
-    path = r'C:\Users\123\Desktop\EasyShip5.3.14_20140807_installation'
-    file_hash = get_file_hash(path)
-    print "-----------File hash calculation is done-----------"
-    for eachhash in file_hash:
-        file_hash = eachhash.split(',')[0]
-        file_path = eachhash.split(',')[1]
-        result = virustotal(file_hash,file_path)
-        f.write(result)
-    f.close()
-   
+def calcHash(path):
+    now = time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time()))
+    if os.path.exists(path):
+        print "["+now+"]: "+"Hash value calculation for file(s) is starting..."
+        file_hash = get_file_hash(path)
+        now = time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time()))
+        print "["+now+"]: "+"Hash value calculation for file(s) is done\n"
+        print "Analysis Result(SHA256):"
+        print "Input Path: "+path
+        print "Output File: "+os.path.dirname(os.path.realpath(__file__))+"\hash_sha256.txt"
+    else:
+        print "["+now+"]: "+"Error! The path is not existed"
+        print "\n[!] to see help message of options run with '-h'"
 
-def test(): 
-    f = open('result_VT.txt','w') # Open log file
-    # set up file path to scan on VirusTotal
-    path = r'C:\Users\123\Desktop\alertMon'
-    file_hash = get_file_hash(path)
-    #print file_hash
-    print "-----------File hash calculation is done-----------"
-    for eachhash in file_hash:
-        file_hash = eachhash.split(',')[0]
-        file_path = eachhash.split(',')[1]
-        result = virustotal(file_hash,file_path)
-        f.write(result)
-        #time.sleep(5)
-    f.close()
-    
-    
+def subVT(path):
+    if os.path.exists(path):
+        now = time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time()))
+        print "["+now+"]: "+"VT analysis for hash value(s) is starting..."
+        f = open('result_VT.txt','w') # Open log file
+        file_hash = open(path,'r')
+        for eachhash in file_hash:
+            file_hash = eachhash.split(',')[0]
+            file_path = eachhash.split(',')[1]
+            result = virustotal(file_hash,file_path)
+            f.write(result)
+        f.close()
+        now = time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time()))
+        print "["+now+"]: "+"VT analysis for hash value(s) is done\n"
+        print "Analysis Result(VT):"
+        print "Input File: "+path
+        print "Output File: "+os.path.dirname(os.path.realpath(__file__))+"\\result_VT.txt"
+    else:
+        now = time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time()))
+        print "["+now+"]: "+"Error! The file is not existed"
+        print "\n[!] to see help message of options run with '-h'"
+
+def myhelp():
+    print "Usage: checkVT.py [options]\n"
+    print "Options:"
+    print "  -h, --help                           Show basic help message and exit"
+    print "  -s path, --sha256=path               Show hash(SHA256) values for file(s) to be analyzed"
+    print "  -v file, --vt=file                   Show VT results for hash value(s) to be analyzed"
+    print "  -c path, --checkVT=path              Show VT results for file(s) to be analyzed"
+    print "\nExamples:"
+    print "  checkVT.py -s c:\windows"
+    print "  checkVT.py -v c:\users\\administrator\desktop\hash_sha256.txt"
+    print "  checkVT.py -c c:\windows"
+    print "\n[!] to see help message of options run with '-h'"
+
+def checkVT(path):
+    if os.path.exists(path):
+        f = open('result_VT.txt','w') # Open log file
+        now = time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time()))
+        print "["+now+"]: "+"Hash value calculation for file(s) is starting..."
+        file_hash = get_file_hash(path)
+        now = time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time()))
+        print "["+now+"]: "+"Hash value calculation for file(s) is done\n"
+        now = time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time()))
+        print "["+now+"]: "+"VT analysis for file(s) is starting..."
+        for eachhash in file_hash:
+            file_hash = eachhash.split(',')[0]
+            file_path = eachhash.split(',')[1]
+            result = virustotal(file_hash,file_path)+"\n"
+            f.write(result)
+        f.close()
+        now = time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time()))
+        print "["+now+"]: "+"VT analysis for file(s) is done\n"
+        print "Analysis Result:"
+        print "Input Path: "+path
+        print "Output File(SHA256): "+os.path.dirname(os.path.realpath(__file__))+"\hash_sha256.txt"
+        print "Output File(VT): "+os.path.dirname(os.path.realpath(__file__))+"\\result_VT.txt"
+    else:
+        now = time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time()))
+        print "["+now+"]: "+"Error! The path is not existed"
+        print "\n[!] to see help message of options run with '-h'"
+
+
+def main():
+    try:
+        options,args = getopt.getopt(sys.argv[1:],"hs:v:c:",["help","sha256=","vt=","checkVT="])
+    except getopt.GetoptError:
+        sys.exit()
+
+    for name,value in options:
+        if name in ("-h","--help"):
+            myhelp()
+        if name in ("-s","--sha256"):
+            calcHash(value)
+        if name in ("-v","--vt"):
+            subVT(value)
+        if name in ("-c","--checkVT"):
+            checkVT(value)
+
 if __name__ == "__main__":
     main()
-    #test()

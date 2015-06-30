@@ -32,7 +32,6 @@ def sha256(filename):
     sh = hashlib.sha256()
     sh.update(f.read())
     fhash = sh.hexdigest()+","+filename
-    #now = time.strftime('%H:%M:%S',time.localtime(time.time()))
     now = time.strftime('%Y-%m-%d %H:%M:%S',time.localtime(time.time()))
     print "["+str(now)+"]: "+sh.hexdigest()
     f.close()
@@ -56,7 +55,6 @@ def get_file_hash(path):
         if (os.path.isfile(list1[i]) == True ):
             fhash = sha256(list1[i])
             hashlist.append(fhash)
-            #print fhash
             f.write(fhash+'\n')
     f.close
     return hashlist

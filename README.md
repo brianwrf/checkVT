@@ -20,5 +20,5 @@ Examples:
 
 [!] to see help message of options run with '-h'
 
-Before you run this script, you need to install a Python library "Beautiful Soup"
+PS: It is based on a Python library "Beautiful Soup"
 https://beautiful-soup-4.readthedocs.org/en/latest/

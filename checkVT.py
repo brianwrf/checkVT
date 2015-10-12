@@ -19,7 +19,7 @@ import argparse
 import getopt 
 
 # Ignore SSL error when accessing a HTTPS website
-ssl._create_default_https_context = ssl._create_unverified_context
+# ssl._create_default_https_context = ssl._create_unverified_context
 
 reload(sys)
 sys.setdefaultencoding( "utf-8" )

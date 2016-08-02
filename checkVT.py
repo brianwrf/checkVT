@@ -2,8 +2,6 @@
 # -*- coding:utf8 -*-
 
 # Description: calculate and check Hashes of multi-files on VirusTotal.com
-# Author: Avfisher
-# Email: security_alert@126.com
 # Date: 2015.06.30
 
 import urllib2
